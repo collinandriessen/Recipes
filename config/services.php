@@ -35,4 +35,18 @@ return [
         ],
     ],
 
+    // USDA FoodData Central — Phase 2.1 (SAA-16). Free API, get a key at
+    // https://fdc.nal.usda.gov/api-key-signup.html (DEMO_KEY works for
+    // light testing but is shared/heavily throttled — use a real key in
+    // any shared environment).
+    'fdc' => [
+        'api_key' => env('FDC_API_KEY'),
+        'rate_limit_per_hour' => env('FDC_RATE_LIMIT_PER_HOUR', 1000),
+        'circuit_failure_threshold' => env('FDC_CIRCUIT_FAILURE_THRESHOLD', 5),
+        'circuit_cooldown_seconds' => env('FDC_CIRCUIT_COOLDOWN_SECONDS', 60),
+        'max_attempts' => env('FDC_MAX_ATTEMPTS', 3),
+        'base_backoff_ms' => env('FDC_BASE_BACKOFF_MS', 250),
+        'timeout_seconds' => env('FDC_TIMEOUT_SECONDS', 10),
+    ],
+
 ];

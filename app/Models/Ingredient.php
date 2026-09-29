@@ -24,7 +24,7 @@ class Ingredient extends Model
     public function allergens(): BelongsToMany
     {
         return $this->belongsToMany(Allergen::class, 'ingredient_allergens')
-            ->withPivot('confidence');
+            ->withPivot('confidence', 'mapping_source');
     }
 
     public function recipeIngredients(): HasMany
