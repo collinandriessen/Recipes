@@ -199,7 +199,12 @@ return [
     'defaults' => [
         'supervisor-1' => [
             'connection' => 'redis',
-            'queue' => ['default'],
+            // `imports` carries the Phase 2.2 recipe import pipeline
+            // (ImportRecipeJob -> MatchIngredientsJob -> ComputeNutritionJob
+            // / ComputeAllergensJob / RecomputeOnEditJob). Listed ahead of
+            // `default` so import-pipeline jobs aren't starved by other
+            // queued work sharing this supervisor.
+            'queue' => ['imports', 'default'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,
