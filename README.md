@@ -104,6 +104,31 @@ Laravel Pint enforces PHP code style (PSR-12-based):
 - Run `./vendor/bin/pint` and `./vendor/bin/phpunit` before opening a PR;
   CI enforces both.
 
+## Spec-Driven Development
+
+This repo uses [GitHub Spec Kit](https://github.com/github/spec-kit) (the
+CLI implementation of [specdriven.ai](https://specdriven.ai/)'s
+Spec-Driven Development methodology) to keep specs as the source of truth
+for feature work. See `.specify/memory/constitution.md` for the project's
+constitution (stack rules, workflow, scope boundary between Product and
+Engineering).
+
+Workflow for any non-trivial feature:
+
+1. `/speckit-specify` — capture the spec (what/why, user stories,
+   acceptance criteria) under `specs/<feature>/spec.md`.
+2. `/speckit-clarify` (optional) — resolve ambiguous edge cases first.
+3. `/speckit-plan` — technical blueprint: architecture, data model, API
+   contract.
+4. `/speckit-tasks` — break the plan into small (1-4h), ordered, testable
+   tasks.
+5. `/speckit-analyze` (optional) — cross-check spec/plan/tasks consistency.
+6. `/speckit-implement` — execute the tasks; tests + Pint must pass.
+
+Product scope for those specs still comes from the Product Lead / founder —
+Spec Kit changes *how* we build, not *who* decides *what* to build (see
+`.specify/memory/constitution.md`, Principle III).
+
 ## Status
 
 Initial scaffold — see issue SAA-3. Product niche/MVP scope is being defined
