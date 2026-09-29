@@ -104,6 +104,22 @@
 
     @if ($recipe->import_status === 'confirmed')
         <div class="bg-white border border-gray-200 rounded-lg p-6">
+            @if ($recipe->allergenFlags->isNotEmpty())
+                {{-- SAA-21 placement priority #3: recipe detail banner, the last
+                     checkpoint before a user acts on the recipe. --}}
+                <div class="text-sm bg-amber-50 border border-amber-200 rounded px-3 py-2 mb-6">
+                    <p class="font-medium text-amber-800 mb-1">Allergen tags are automated, not a guarantee.</p>
+                    <p class="text-amber-700">
+                        RecipeFit flags likely allergens by matching ingredient names and categories against
+                        a keyword list we maintain — it is not a certified or medically reviewed allergen check,
+                        and it can miss allergens hidden in a branded product, a substitution, or an ambiguous
+                        ingredient name. If you or someone you're cooking for has a food allergy or intolerance,
+                        always read the full ingredient list below yourself, and check packaging/labels for
+                        anything store-bought, before relying on this recipe.
+                    </p>
+                </div>
+            @endif
+
             <h2 class="text-sm font-medium text-gray-700 mb-3">Ingredients</h2>
             <ul class="text-sm text-gray-600 space-y-1 mb-6">
                 @foreach ($recipe->ingredients as $line)

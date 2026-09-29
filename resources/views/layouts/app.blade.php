@@ -20,6 +20,9 @@
                         <a href="{{ route('dashboard') }}" class="text-gray-700 hover:text-indigo-600">
                             Dashboard
                         </a>
+                        <a href="{{ route('recipes.library') }}" class="text-gray-700 hover:text-indigo-600">
+                            Recipes
+                        </a>
                         <span class="text-gray-400">|</span>
                         <span class="text-gray-500">{{ auth()->user()->email }}</span>
                         <form method="POST" action="{{ route('logout') }}">

@@ -6,6 +6,7 @@ use App\Livewire\Auth\Register;
 use App\Livewire\Dashboard;
 use App\Livewire\Recipes\ImportFromUrl;
 use App\Livewire\Recipes\ManualEntry;
+use App\Livewire\Recipes\RecipeLibrary;
 use App\Livewire\Recipes\ShowRecipe;
 use Illuminate\Support\Facades\Route;
 
@@ -25,5 +26,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/recipes/import', ImportFromUrl::class)->name('recipes.import');
     Route::get('/recipes/manual', ManualEntry::class)->name('recipes.manual-entry');
     Route::get('/recipes/{recipe}/manual', ManualEntry::class)->name('recipes.manual-entry.edit');
+    Route::get('/recipes', RecipeLibrary::class)->name('recipes.library');
     Route::get('/recipes/{recipe}', ShowRecipe::class)->name('recipes.show');
 });
