@@ -23,6 +23,9 @@
                         <a href="{{ route('recipes.library') }}" class="text-gray-700 hover:text-indigo-600">
                             Recipes
                         </a>
+                        <a href="{{ route('shopping-list') }}" class="text-gray-700 hover:text-indigo-600">
+                            Shopping list
+                        </a>
                         <span class="text-gray-400">|</span>
                         <span class="text-gray-500">{{ auth()->user()->email }}</span>
                         <form method="POST" action="{{ route('logout') }}">
@@ -52,8 +55,14 @@
             </div>
         </main>
 
-        <footer class="border-t border-gray-200 bg-white text-center text-xs text-gray-400 py-4">
-            &copy; {{ date('Y') }} {{ config('app.name', 'SaaS Corp') }}
+        <footer class="border-t border-gray-200 bg-white text-center text-xs text-gray-400 py-4 space-y-1">
+            <p>&copy; {{ date('Y') }} {{ config('app.name', 'SaaS Corp') }}</p>
+            {{-- SAA-21 placement priority #2 (non-negotiable): persistent footer
+                 note + link to the full Terms/legal disclaimer paragraph. --}}
+            <p>
+                Allergen &amp; nutrition info is automated — not medical advice.
+                <a href="{{ route('legal.disclaimer') }}" class="underline hover:text-gray-600">Learn more.</a>
+            </p>
         </footer>
     </div>
 

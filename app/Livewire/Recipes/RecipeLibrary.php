@@ -7,7 +7,9 @@ use App\Models\MealPlanEntry;
 use App\Models\Recipe;
 use App\Models\Tag;
 use App\Models\UserExclusion;
+use App\Services\Billing\FeatureGate;
 use App\Services\Recipes\RecipeFilterQuery;
+use App\Services\ShoppingList\ShoppingListGenerator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
@@ -77,6 +79,42 @@ class RecipeLibrary extends Component
 
     public ?int $addTagToRecipeId = null;
 
+    public bool $isPaidTier = false;
+
+    /**
+     * Architecture §6 / SAA-19: defense-in-depth gate check. FilterPanel
+     * already no-ops gated values before dispatching filters-updated, but
+     * RecipeLibrary also gates here since the macro/allergen properties are
+     * #[Url]-bound — a free-tier user could otherwise load a paid filter
+     * straight from a bookmarked/shared URL and have it silently apply.
+     */
+    public function mount(): void
+    {
+        $this->isPaidTier = FeatureGate::forUser(Auth::user())->canUseMacroAllergenFilters();
+
+        $this->applyGate();
+    }
+
+    private function applyGate(): void
+    {
+        $gated = FeatureGate::forUser(Auth::user())->gateFilterInput([
+            'calorieMin' => $this->calorieMin,
+            'calorieMax' => $this->calorieMax,
+            'proteinMin' => $this->proteinMin,
+            'proteinMax' => $this->proteinMax,
+            'carbsMin' => $this->carbsMin,
+            'carbsMax' => $this->carbsMax,
+            'fatMin' => $this->fatMin,
+            'fatMax' => $this->fatMax,
+            'excludedAllergenIds' => $this->excludedAllergenIds,
+            'excludedCustomExclusionIds' => $this->excludedCustomExclusionIds,
+        ]);
+
+        foreach ($gated as $key => $value) {
+            $this->{$key} = $value;
+        }
+    }
+
     /**
      * Consumes the FilterPanel child's debounced `filters-updated` event.
      * This is the ONLY write path into the filter properties above besides
@@ -86,6 +124,8 @@ class RecipeLibrary extends Component
     #[On('filters-updated')]
     public function applyFilters(array $filters): void
     {
+        $filters = FeatureGate::forUser(Auth::user())->gateFilterInput($filters);
+
         $this->search = $filters['search'] ?? '';
         $this->calorieMin = $filters['calorieMin'] ?? null;
         $this->calorieMax = $filters['calorieMax'] ?? null;
@@ -169,6 +209,21 @@ class RecipeLibrary extends Component
             ->where('user_id', Auth::id())
             ->whereKey($mealPlanEntryId)
             ->delete();
+    }
+
+    /**
+     * "Add to shopping list" on a card in the grid — an ad-hoc, non-meal-plan
+     * shortcut into the same ShoppingListGenerator the shopping-list page
+     * uses for the weekly plan, so the aggregation rule stays identical
+     * either way (SAA-19).
+     */
+    public function generateFromRecipe(int $recipeId): void
+    {
+        $recipe = Recipe::query()->where('user_id', Auth::id())->findOrFail($recipeId);
+
+        app(ShoppingListGenerator::class)->generateFromRecipes(Auth::user(), [$recipe->id]);
+
+        $this->dispatch('shopping-list-updated');
     }
 
     public function render()

@@ -1,4 +1,18 @@
 <div class="bg-white border border-gray-200 rounded-lg p-5 space-y-6">
+    @unless ($isPaidTier)
+        {{-- Architecture §6 / SAA-19: FeatureGate upsell state. Macro range +
+             allergen exclusion are the paid-tier hook per the roadmap; free
+             users keep search/tags/collections/meal-plan/shopping-list in
+             full, this banner only covers the gated section below. --}}
+        <div class="rounded border border-indigo-200 bg-indigo-50 px-3 py-2.5 text-sm text-indigo-800">
+            <p class="font-medium">Macro & allergen filtering is a paid feature.</p>
+            <p class="text-indigo-700 text-xs mt-0.5">
+                Upgrade to filter your library by calories/protein/carbs/fat and to exclude
+                allergens. The controls below are disabled on the free plan.
+            </p>
+        </div>
+    @endunless
+
     <div>
         <label for="filter-search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
         <input
@@ -10,7 +24,7 @@
         >
     </div>
 
-    <div class="space-y-4">
+    <div class="space-y-4 {{ $isPaidTier ? '' : 'opacity-50' }}">
         <h3 class="text-sm font-semibold text-gray-700">Macros (per recipe)</h3>
 
         <div>
@@ -19,9 +33,9 @@
                 <span>{{ $calorieMin ?? 0 }}–{{ $calorieMax ?? $calorieCeiling }} kcal</span>
             </div>
             <div class="flex gap-2">
-                <input type="range" min="0" max="{{ $calorieCeiling }}" step="25"
+                <input type="range" min="0" max="{{ $calorieCeiling }}" step="25" @disabled(! $isPaidTier)
                     wire:model.live.debounce.300ms="calorieMin" class="w-full">
-                <input type="range" min="0" max="{{ $calorieCeiling }}" step="25"
+                <input type="range" min="0" max="{{ $calorieCeiling }}" step="25" @disabled(! $isPaidTier)
                     wire:model.live.debounce.300ms="calorieMax" class="w-full">
             </div>
         </div>
@@ -32,9 +46,9 @@
                 <span>{{ $proteinMin ?? 0 }}–{{ $proteinMax ?? $proteinCeiling }} g</span>
             </div>
             <div class="flex gap-2">
-                <input type="range" min="0" max="{{ $proteinCeiling }}" step="5"
+                <input type="range" min="0" max="{{ $proteinCeiling }}" step="5" @disabled(! $isPaidTier)
                     wire:model.live.debounce.300ms="proteinMin" class="w-full">
-                <input type="range" min="0" max="{{ $proteinCeiling }}" step="5"
+                <input type="range" min="0" max="{{ $proteinCeiling }}" step="5" @disabled(! $isPaidTier)
                     wire:model.live.debounce.300ms="proteinMax" class="w-full">
             </div>
         </div>
@@ -45,9 +59,9 @@
                 <span>{{ $carbsMin ?? 0 }}–{{ $carbsMax ?? $carbsCeiling }} g</span>
             </div>
             <div class="flex gap-2">
-                <input type="range" min="0" max="{{ $carbsCeiling }}" step="5"
+                <input type="range" min="0" max="{{ $carbsCeiling }}" step="5" @disabled(! $isPaidTier)
                     wire:model.live.debounce.300ms="carbsMin" class="w-full">
-                <input type="range" min="0" max="{{ $carbsCeiling }}" step="5"
+                <input type="range" min="0" max="{{ $carbsCeiling }}" step="5" @disabled(! $isPaidTier)
                     wire:model.live.debounce.300ms="carbsMax" class="w-full">
             </div>
         </div>
@@ -58,15 +72,15 @@
                 <span>{{ $fatMin ?? 0 }}–{{ $fatMax ?? $fatCeiling }} g</span>
             </div>
             <div class="flex gap-2">
-                <input type="range" min="0" max="{{ $fatCeiling }}" step="5"
+                <input type="range" min="0" max="{{ $fatCeiling }}" step="5" @disabled(! $isPaidTier)
                     wire:model.live.debounce.300ms="fatMin" class="w-full">
-                <input type="range" min="0" max="{{ $fatCeiling }}" step="5"
+                <input type="range" min="0" max="{{ $fatCeiling }}" step="5" @disabled(! $isPaidTier)
                     wire:model.live.debounce.300ms="fatMax" class="w-full">
             </div>
         </div>
     </div>
 
-    <div>
+    <div class="{{ $isPaidTier ? '' : 'opacity-50' }}">
         <h3 class="text-sm font-semibold text-gray-700 mb-2">Exclude allergens</h3>
 
         {{-- SAA-21 placement priority #4 (filter-level disclaimer). Shown
@@ -85,6 +99,7 @@
                     <input
                         type="checkbox"
                         value="{{ $allergen->id }}"
+                        @disabled(! $isPaidTier)
                         wire:model.live.debounce.300ms="excludedAllergenIds"
                         class="rounded border-gray-300"
                     >
@@ -101,6 +116,7 @@
                         <input
                             type="checkbox"
                             value="{{ $exclusion->id }}"
+                            @disabled(! $isPaidTier)
                             wire:model.live.debounce.300ms="excludedCustomExclusionIds"
                             class="rounded border-gray-300"
                         >

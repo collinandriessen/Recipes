@@ -100,4 +100,14 @@
             @endif
         </div>
     </a>
+
+    <div class="px-4 pb-3 -mt-1">
+        <button
+            type="button"
+            wire:click.stop="generateFromRecipe({{ $recipe->id }})"
+            class="w-full text-xs px-2 py-1.5 rounded border border-gray-200 text-gray-600 hover:border-indigo-300 hover:text-indigo-600"
+        >
+            + Add to shopping list
+        </button>
+    </div>
 </div>

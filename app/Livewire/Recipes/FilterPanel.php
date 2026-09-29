@@ -4,6 +4,7 @@ namespace App\Livewire\Recipes;
 
 use App\Models\Allergen;
 use App\Models\UserExclusion;
+use App\Services\Billing\FeatureGate;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -19,6 +20,15 @@ use Livewire\Component;
  * `updated()` fires after that debounce and is where the event actually
  * goes out, so a burst of edits (e.g. dragging a range slider) collapses
  * into a single filters-updated dispatch.
+ *
+ * Architecture §6 / SAA-19: the combined macro + allergen filter is the
+ * paid-tier hook. FeatureGate is checked in mount() (so a free user's inputs
+ * render already-cleared/disabled, no flash of a working filter) AND in
+ * updated() (so a crafted wire:model payload can't bypass the gate — the
+ * gate no-ops the value server-side before it ever reaches
+ * emitFiltersUpdated). $isPaidTier / $upsellVisible drive the upsell state
+ * in the view; FilterPanel never redirects or blocks rendering, it just
+ * disables the gated inputs and shows the upsell message inline.
  */
 class FilterPanel extends Component
 {
@@ -55,8 +65,15 @@ class FilterPanel extends Component
 
     public int $fatCeiling = 150;
 
+    public bool $isPaidTier = false;
+
     public function mount(array $initial = []): void
     {
+        $gate = FeatureGate::forUser(Auth::user());
+        $this->isPaidTier = $gate->canUseMacroAllergenFilters();
+
+        $initial = $gate->gateFilterInput($initial);
+
         foreach ($initial as $key => $value) {
             if (property_exists($this, $key)) {
                 $this->{$key} = $value;
@@ -68,10 +85,19 @@ class FilterPanel extends Component
      * Livewire calls this after ANY public property changes (post-debounce,
      * since the inputs use wire:model.live.debounce.300ms) — this is the
      * single choke point that turns "the user changed something" into one
-     * outbound event, regardless of which field changed.
+     * outbound event, regardless of which field changed. Gated properties
+     * are snapped back to their cleared value here for free-tier users
+     * before the event goes out, so the parent's query never sees a gated
+     * value even if a client-side edit slipped through.
      */
-    public function updated(): void
+    public function updated(string $property): void
     {
+        $gate = FeatureGate::forUser(Auth::user());
+
+        if (! $gate->canUseMacroAllergenFilters() && $gate->isGatedProperty($property)) {
+            $this->{$property} = in_array($property, FeatureGate::GATED_ALLERGEN_KEYS, true) ? [] : null;
+        }
+
         $this->emitFiltersUpdated();
     }
 
@@ -88,7 +114,7 @@ class FilterPanel extends Component
 
     private function emitFiltersUpdated(): void
     {
-        $this->dispatch('filters-updated', filters: [
+        $filters = FeatureGate::forUser(Auth::user())->gateFilterInput([
             'calorieMin' => $this->calorieMin,
             'calorieMax' => $this->calorieMax,
             'proteinMin' => $this->proteinMin,
@@ -101,6 +127,8 @@ class FilterPanel extends Component
             'excludedCustomExclusionIds' => $this->excludedCustomExclusionIds,
             'search' => $this->search,
         ]);
+
+        $this->dispatch('filters-updated', filters: $filters);
     }
 
     public function render()

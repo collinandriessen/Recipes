@@ -54,7 +54,7 @@ class RecipeLibraryTest extends TestCase
 
     public function test_combined_macro_and_allergen_filters_apply_together(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['subscription_tier' => 'paid']);
         $peanuts = Allergen::factory()->create(['name' => 'Peanuts', 'is_top9' => true]);
 
         // Matches both filters: low-cal AND no peanuts.
@@ -84,7 +84,7 @@ class RecipeLibraryTest extends TestCase
 
     public function test_filter_state_is_reflected_in_the_url_query_string(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['subscription_tier' => 'paid']);
         $peanuts = Allergen::factory()->create(['name' => 'Peanuts', 'is_top9' => true]);
 
         $component = Livewire::actingAs($user)
@@ -116,7 +116,7 @@ class RecipeLibraryTest extends TestCase
 
     public function test_custom_ingredient_exclusion_removes_matching_recipes(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['subscription_tier' => 'paid']);
         $shrimp = Ingredient::factory()->create(['name' => 'Shrimp']);
 
         $recipeWithShrimp = Recipe::factory()->for($user)->create([
